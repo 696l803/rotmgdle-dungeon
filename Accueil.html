@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RotMGDLE – Home</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root { --gold:#ffcc00; }
+* { box-sizing:border-box; }
+
+body{
+  font-family:'Press Start 2P', system-ui;
+  background:linear-gradient(#1a1a2e,#0f0f1f);
+  color:#eee;
+  margin:0;
+  padding:16px;
+  text-align:center;
+}
+
+h1{
+  color:var(--gold);
+  text-shadow:0 0 15px var(--gold);
+}
+
+.game-container{
+  max-width:1400px;
+  margin:auto;
+  background:#16213e;
+  border:4px solid var(--gold);
+  border-radius:12px;
+  padding:40px;
+  margin-top:40px;
+}
+
+/* ✅ MENU TEXTE CLIQUABLE */
+.menu-links{
+  margin-top:20px;
+  display:flex;
+  flex-direction:column;
+  gap:28px;
+  font-size:20px;
+}
+
+.menu-link{
+  text-decoration:none;
+  color:#eee;
+  transition:0.15s;
+}
+
+.menu-link:hover{
+  color:var(--gold);
+  text-shadow:0 0 10px var(--gold);
+  transform:scale(1.05);
+}
+</style>
+</head>
+
+<body>
+
+<h1>ROTMGDLE</h1>
+
+<div class="game-container">
+
+  <div class="menu-links">
+
+    <a href="#" class="menu-link">
+      ✏️ ITEMS ✏️
+    </a>
+
+    <a href="index.html" class="menu-link">
+      🏰 DUNGEON 🏰
+    </a>
+
+    <a href="#" class="menu-link">
+      🎵 MUSIC 🎵
+    </a>
+
+  </div>
+
+</div>
+
+</body>
+</html>
