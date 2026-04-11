@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <title>RotMGDLE – Stable</title>
@@ -36,7 +36,6 @@ h1{
   padding:20px;
 }
 
-/* Harmonisation + décalage */
 .grid,.row{
   display:grid;
   grid-template-columns:140px 14% 10% 14% 22% 12% 12%;
@@ -113,6 +112,16 @@ button{
   background:#22c55e;
   border:none;
   border-radius:6px;
+  cursor:pointer;
+}
+
+.daily-btn {
+  background:#f59e0b !important;
+  color:#000;
+}
+
+.daily-btn.active {
+  background:#22c55e !important;
 }
 </style>
 </head>
@@ -141,9 +150,10 @@ button{
   <button onclick="submitGuess()">GUESS</button>
 </div>
 
-<div style="margin-top:15px;">
-  <input id="seed-input" placeholder="Enter seed (optional)" style="width:80%;padding:10px;">
-  <button onclick="applySeed()" style="margin-top:10px;">Set Seed</button>
+<div style="margin-top:15px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+  <input id="seed-input" placeholder="Enter seed (optional)" style="width:260px;padding:10px;">
+  <button onclick="applySeed()">Set Seed</button>
+  <button id="daily-btn" class="daily-btn" onclick="toggleDailyMode()">Daily Mode</button>
 </div>
 
 <datalist id="dungeon-list"></datalist>
@@ -156,14 +166,6 @@ button{
 <script>
 function normalize(v){return v.toLowerCase().replace(/’/g,"'").trim();}
 
-/* ✅ Génération auto des URLs des portails */
-function getPortalURL(name){
-  const clean = name.replace(/'/g, "%27")
-                    .replace(/ /g, "%20")
-                    .trim();
-  return `https://static.drips.pw/rotmg/wiki/Environment/Portals/${clean}%20Portal.png`;
-}
-
 function hashSeed(str){
   let h=0;
   for(let i=0;i<str.length;i++){
@@ -172,178 +174,142 @@ function hashSeed(str){
   return Math.abs(h);
 }
 
+// Fonction pour générer un seed journalier basé sur la date
+function getDailySeed() {
+  const today = new Date();
+  const dateStr = today.getFullYear() + '-' + 
+                  String(today.getMonth()+1).padStart(2,'0') + '-' + 
+                  String(today.getDate()).padStart(2,'0');
+  return hashSeed(dateStr);
+}
+
 const sizeOrder = { "Arena":1, "Short":2, "Medium":3, "Long":4 };
 
-function compare(a,b,isPots=false){
-  const A=normalize(a), B=normalize(b);
+function compare(a, b, isPots = false) {
+  const A = normalize(a);
+  const B = normalize(b);
 
-  if(!isNaN(A) && !isNaN(B)){
-    if(Number(A)===Number(B)) return "green";
-    return Number(A) < Number(B) ? "arrow-up" : "arrow-down";
+  if (!isPots) {
+    if (!isNaN(A) && !isNaN(B)) {
+      if (Number(A) === Number(B)) return "green";
+      return Number(A) < Number(B) ? "arrow-up" : "arrow-down";
+    }
+    if (sizeOrder[a] && sizeOrder[b]) {
+      if (sizeOrder[a] === sizeOrder[b]) return "green";
+      return sizeOrder[a] < sizeOrder[b] ? "arrow-up" : "arrow-down";
+    }
+    return A === B ? "green" : "gray";
   }
 
-  if(sizeOrder[a] && sizeOrder[b]){
-    if(sizeOrder[a]===sizeOrder[b]) return "green";
-    return sizeOrder[a] < sizeOrder[b] ? "arrow-up" : "arrow-down";
+  if (A === B) return "green";
+
+  const allMinor = ["att", "def", "dex", "spd", "vit", "wis"];
+  const targetPots = B.split(",").map(s => s.trim().toLowerCase());
+  const guessPots  = A.split(",").map(s => s.trim().toLowerCase());
+
+  if (targetPots.length === 6 && allMinor.every(p => targetPots.includes(p))) {
+    return guessPots.some(p => allMinor.includes(p)) ? "orange" : "gray";
   }
 
-  if(isPots){
-    if(A===B) return "green";
-    const la=A.split(",").map(s=>s.trim());
-    const lb=B.split(",").map(s=>s.trim());
-    return la.some(p=>lb.includes(p)) ? "orange" : "gray";
-  }
-
-  return A===B ? "green" : "gray";
+  return guessPots.some(p => targetPots.includes(p)) ? "orange" : "gray";
 }
 
-let target, remaining, manualSeed=null;
+let target, remaining, manualSeed = null;
+let isDailyMode = false;
 
-const dungeons = [{name:"Pirate Cave",difficulty:"1",boss:"1",treasure:"No",pots:"None",date:"2010",size:"Short"},
-{name:"Forest Maze",difficulty:"1",boss:"1",treasure:"No",pots:"None",date:"2013",size:"Short"},
-{name:"Spider Den",difficulty:"1.5",boss:"1",treasure:"No",pots:"None",date:"2010",size:"Short"},
-{name:"Forbidden Jungle",difficulty:"1.5",boss:"1",treasure:"No",pots:"None",date:"2011",size:"Short"},
-
-{name:"The Hive",difficulty:"2",boss:"1",treasure:"No",pots:"DEX",date:"2016",size:"Short"},
-
-{name:"Snake Pit",difficulty:"2.5",boss:"1",treasure:"Yes",pots:"SPD",date:"2010",size:"Short"},
-{name:"Sprite World",difficulty:"2.5",boss:"1",treasure:"No",pots:"DEX, DEF, ATK",date:"2010",size:"Short"},
-{name:"Cave of a Thousand Treasures",difficulty:"2.5",boss:"1",treasure:"Yes",pots:"All minor",date:"2011",size:"Short"},
-
-{name:"Candyland Hunting Grounds",difficulty:"3.5",boss:"6",treasure:"No",pots:"DEF, ATK, WIS",date:"2014",size:"Short"},
-
-{name:"Magic Woods",difficulty:"3",boss:"1",treasure:"No",pots:"SPD, DEX",date:"2015",size:"Medium"},
-{name:"Ancient Ruins",difficulty:"3",boss:"1",treasure:"Yes",pots:"All minor",date:"2012",size:"Medium"},
-
-{name:"Undead Lair",difficulty:"3.5",boss:"1",treasure:"Yes",pots:"WIS",date:"2010",size:"Short"},
-{name:"Puppet Master's Theatre",difficulty:"4",boss:"1",treasure:"Yes",pots:"ATK",date:"2014",size:"Medium"},
-{name:"Toxic Sewers",difficulty:"4",boss:"1",treasure:"Yes",pots:"DEF",date:"2016",size:"Medium"},
-{name:"Abyss of Demons",difficulty:"4",boss:"1",treasure:"Yes",pots:"VIT, DEF",date:"2011",size:"Medium"},
-{name:"Manor of the Immortals",difficulty:"4",boss:"1",treasure:"Yes",pots:"ATK",date:"2012",size:"Medium"},
-{name:"Mad Lab",difficulty:"4",boss:"1",treasure:"Yes",pots:"WIS, DEF",date:"2012",size:"Medium"},
-{name:"Cursed Library",difficulty:"4",boss:"1",treasure:"Yes",pots:"WIS, VIT, ATK",date:"2019",size:"Medium"},
-
-{name:"Haunted Cemetery",difficulty:"4.5",boss:"3",treasure:"No",pots:"All minor",date:"2013",size:"Arena"},
-{name:"The Machine",difficulty:"4.5",boss:"1",treasure:"No",pots:"None",date:"2016",size:"Arena"},
-
-{name:"Davy Jones' Locker",difficulty:"5",boss:"1",treasure:"Yes",pots:"MANA, ATK, WIS",date:"2013",size:"Medium"},
-{name:"Ocean Trench",difficulty:"5",boss:"1",treasure:"No",pots:"MANA",date:"2011",size:"Medium"},
-
-{name:"Puppet Master's Encore",difficulty:"5.5",boss:"1",treasure:"No",pots:"ATK, MANA, DEF",date:"2020",size:"Arena"},
-
-{name:"Parasite Chambers",difficulty:"5.5",boss:"1",treasure:"No",pots:"MANA",date:"2017",size:"Short"},
-{name:"Deadwater Docks",difficulty:"5.5",boss:"1",treasure:"Yes",pots:"GSPD, GDEX",date:"2013",size:"Medium"},
-{name:"Cnidarian Reef",difficulty:"5.5",boss:"1",treasure:"No",pots:"GDEF, GATK, MANA",date:"2017",size:"Arena"},
-
-{name:"Mountain Temple",difficulty:"6",boss:"1",treasure:"Yes",pots:"GDEF, All minor",date:"2017",size:"Medium"},
-
-{name:"The Crawling Depths",difficulty:"5.5",boss:"1",treasure:"Yes",pots:"GDEF, GWIS, MANA",date:"2015",size:"Medium"},
-{name:"Woodland Labyrinth",difficulty:"5.5",boss:"1",treasure:"Yes",pots:"GVIT, GATK, LIFE",date:"2014",size:"Medium"},
-
-{name:"Secluded Thicket",difficulty:"6.5",boss:"3",treasure:"No",pots:"ATK, DEF, LIFE, MANA",date:"2018",size:"Arena"},
-
-{name:"Lair of Draconis",difficulty:"6",boss:"4",treasure:"No",
- pots:"GSPD, GATK, GDEF, GDEX, GVIT, GWIS, GM",date:"2013",size:"Arena"},
-
-{name:"Tomb of the Ancients",difficulty:"6",boss:"3",treasure:"Yes",pots:"LIFE",date:"2011",size:"Long"},
-
-{name:"Lair of Shaitan",difficulty:"6",boss:"1",treasure:"No",pots:"ATK, VIT, LIFE",date:"2013",size:"Arena"},
-
-{name:"The Nest",difficulty:"7",boss:"1",treasure:"Yes",pots:"GL, GDEX",date:"2019",size:"Long"},
-{name:"Plagued Nest",difficulty:"8.5",boss:"1",treasure:"Yes",pots:"GLIFE, GDEX",date:"2025",size:"Long"},
-
-{name:"Cultist Hideout",difficulty:"7",boss:"1",treasure:"No",pots:"LIFE, MANA",date:"2017",size:"Long"},
-
-{name:"Fungal Cavern",difficulty:"7.5",boss:"1",treasure:"No",
- pots:"HP, GSPD, GDEX, GDEF, GATK, GVIT, GWIS",date:"2020",size:"Long"},
-
-{name:"Crystal Cavern",difficulty:"7.5",boss:"1",treasure:"No",
- pots:"HP, GSPD, GDEX, GDEF, GATK, GVIT, GWIS",date:"2020",size:"Long"},
-
-{name:"Spectral Penitentiary",difficulty:"8",boss:"2",treasure:"No",
- pots:"GDEF, GMP, SPD, VIT, WIS, ATK, MP",date:"2021",size:"Long"},
-
-{name:"Lost Halls",difficulty:"8",boss:"2",treasure:"Yes",
- pots:"ATK, DEF, HP, MP",date:"2017",size:"Long"},
-
-{name:"Sulfurous Wetlands",difficulty:"6",boss:"1",treasure:"Yes",
- pots:"MANA, GSPD, GDEX, GDEF, GATK, GVIT, GWIS",date:"2025",size:"Long"},
-
-{name:"The Third Dimension",difficulty:"6",boss:"2",treasure:"Yes",
- pots:"GWIS, GATK, MP, HP, VIT, DEF",date:"2025",size:"Long"},
-
-{name:"The Void",difficulty:"8.5",boss:"1",treasure:"No",
- pots:"HP, MP",date:"2017",size:"Arena"},
-
-{name:"Ice Citadel",difficulty:"7",boss:"1",treasure:"No",
- pots:"LIFE, GM, GDEF, GWIS, GSPD",date:"2025",size:"Long"},
-
-{name:"Kogbold Steamworks",difficulty:"8",boss:"2",treasure:"No",
- pots:"GSPD, GATK, GDEF, GDEX, GVIT, GWIS",date:"2022",size:"Long"},
-
-{name:"Advanced Kogbold Steamworks",difficulty:"10",boss:"2",treasure:"No",
- pots:"GSPD, GATK, GDEF, GDEX, GVIT, GWIS",date:"2023",size:"Long"},
-
-{name:"Oryx's Sanctuary",difficulty:"9.5",boss:"2",treasure:"No",
- pots:"GL, GM",date:"2019",size:"Medium"},
-
-{name:"The Shatters",difficulty:"10",boss:"3",treasure:"No",
- pots:"GATK, GDEF, GMP, GWIS, GHP, GVIT",date:"2021",size:"Long"},
-
-{name:"High Tech Terror",difficulty:"6.5",boss:"1",treasure:"No",
- pots:"GWIS, MP, HP",date:"2020",size:"Arena"},
-
-{name:"Moonlight Village",difficulty:"9",boss:"3",treasure:"No",
- pots:"GLIFE, GVIT, GWIS",date:"2025",size:"Arena"},
-
-{name:"The Tavern",difficulty:"5.5",boss:"3",treasure:"No",
- pots:"GVIT, VIT, MANA",date:"2023",size:"Arena"}
+const dungeons = [ /* Ton tableau complet reste identique */ 
+  {name:"Pirate Cave", difficulty:"1", boss:"1", treasure:"No", pots:"None", date:"2010", size:"Short", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/OqzVQuc.png"},
+  {name:"Forest Maze", difficulty:"1", boss:"1", treasure:"No", pots:"None", date:"2013", size:"Short", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/m0AO506.png"},
+  {name:"Spider Den", difficulty:"1.5", boss:"1", treasure:"No", pots:"None", date:"2010", size:"Short", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/up93OlG.png"},
+  {name:"Forbidden Jungle", difficulty:"1.5", boss:"1", treasure:"No", pots:"None", date:"2011", size:"Short", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/beQHm21.png"},
+  {name:"The Hive", difficulty:"2", boss:"1", treasure:"No", pots:"DEX", date:"2016", size:"Short", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/6WiS9zQ.png"},
+  {name:"Snake Pit", difficulty:"2.5", boss:"1", treasure:"Yes", pots:"SPD", date:"2010", size:"Short", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/Mhtm0aR.png"},
+  {name:"Sprite World", difficulty:"2.5", boss:"1", treasure:"No", pots:"DEX, DEF, ATT", date:"2010", size:"Short", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/K0dJRrF.png"},
+  {name:"Cave of a Thousand Treasures", difficulty:"2.5", boss:"1", treasure:"Yes", pots:"ATT, DEF, DEX, SPD, VIT, WIS", date:"2011", size:"Short", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/6lgodhZ.png"},
+  {name:"Candyland Hunting Grounds", difficulty:"3.5", boss:"6", treasure:"No", pots:"DEF, ATT, WIS", date:"2014", size:"Short", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/BKoSv6j.png"},
+  {name:"Magic Woods", difficulty:"3", boss:"1", treasure:"No", pots:"SPD, DEX", date:"2015", size:"Medium", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/nmLtcBD.png"},
+  {name:"Ancient Ruins", difficulty:"3", boss:"1", treasure:"Yes", pots:"ATT, DEF, DEX, SPD, VIT, WIS", date:"2012", size:"Medium", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/4gtP9OQ.png"},
+  {name:"Undead Lair", difficulty:"3.5", boss:"1", treasure:"Yes", pots:"WIS", date:"2010", size:"Short", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/pR8Dgth.png"},
+  {name:"Puppet Master's Theatre", difficulty:"4", boss:"1", treasure:"Yes", pots:"ATT", date:"2014", size:"Medium", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/6diBou4.png"},
+  {name:"Toxic Sewers", difficulty:"4", boss:"1", treasure:"Yes", pots:"DEF", date:"2016", size:"Medium", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/4Iv5apz.png"},
+  {name:"Abyss of Demons", difficulty:"4", boss:"1", treasure:"Yes", pots:"VIT, DEF", date:"2011", size:"Medium", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/wId2zPS.png"},
+  {name:"Manor of the Immortals", difficulty:"4", boss:"1", treasure:"Yes", pots:"ATT", date:"2012", size:"Medium", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/paEB8Qu.png"},
+  {name:"Mad Lab", difficulty:"4", boss:"1", treasure:"Yes", pots:"WIS, DEF", date:"2012", size:"Medium", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/x6dyxMp.gif"},
+  {name:"Cursed Library", difficulty:"4", boss:"1", treasure:"Yes", pots:"WIS, VIT, ATT", date:"2019", size:"Medium", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/9nQ7nSz.gif"},
+  {name:"Haunted Cemetery", difficulty:"4.5", boss:"3", treasure:"No", pots:"ATT, DEF, DEX, SPD, VIT, WIS", date:"2013", size:"Arena", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/VB6hMsm.gif"},
+  {name:"The Machine", difficulty:"4.5", boss:"1", treasure:"No", pots:"None", date:"2016", size:"Arena", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/Yhd1MCq.png"},
+  {name:"Davy Jones' Locker", difficulty:"5", boss:"1", treasure:"Yes", pots:"Mana, ATT, WIS", date:"2013", size:"Medium", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/Hqmoe5U.gif"},
+  {name:"Ocean Trench", difficulty:"5", boss:"1", treasure:"No", pots:"Mana", date:"2011", size:"Medium", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/9GR3Ypw.png"},
+  {name:"The Crawling Depths", difficulty:"5.5", boss:"1", treasure:"Yes", pots:"GDEF, GWIS, Mana", date:"2015", size:"Medium", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/V1rfmTa.gif"},
+  {name:"Woodland Labyrinth", difficulty:"5.5", boss:"1", treasure:"Yes", pots:"GVIT, GATT, Life", date:"2014", size:"Medium", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/jyKYlZg.gif"},
+  {name:"Deadwater Docks", difficulty:"5.5", boss:"1", treasure:"Yes", pots:"GSPD, GDEX", date:"2013", size:"Medium", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/baXW11C.png"},
+  {name:"Puppet Master's Encore", difficulty:"5.5", boss:"1", treasure:"No", pots:"ATT, Mana, DEF", date:"2020", size:"Arena", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/UhdCm8R.png"},
+  {name:"Parasite Chambers", difficulty:"5.5", boss:"1", treasure:"No", pots:"Mana", date:"2017", size:"Short", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/O43mDnf.gif"},
+  {name:"Cnidarian Reef", difficulty:"5.5", boss:"1", treasure:"No", pots:"GDEF, GATT, Mana", date:"2017", size:"Arena", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/pXFqErd.png"},
+  {name:"Mountain Temple", difficulty:"6", boss:"1", treasure:"Yes", pots:"GDEF, ATT, DEF, DEX, SPD, VIT, WIS", date:"2017", size:"Medium", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/fGgckZI.png"},
+  {name:"Lair of Draconis", difficulty:"6", boss:"4", treasure:"No", pots:"GSPD, GATT, GDEF, GDEX, GVIT, GWIS, GM", date:"2013", size:"Arena", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/QjX8g5O.png"},
+  {name:"Tomb of the Ancients", difficulty:"6", boss:"3", treasure:"Yes", pots:"Life", date:"2011", size:"Long", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/E6a3nHx.png"},
+  {name:"Lair of Shaitan", difficulty:"6", boss:"1", treasure:"No", pots:"ATT, VIT, Life", date:"2013", size:"Arena", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/px7FwlI.png"},
+  {name:"Secluded Thicket", difficulty:"6.5", boss:"3", treasure:"No", pots:"ATT, DEF, Life, Mana", date:"2018", size:"Arena", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/IeOHusO.png"},
+  {name:"The Nest", difficulty:"7", boss:"1", treasure:"Yes", pots:"GL, GDEX", date:"2019", size:"Long", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/FgpEOel.png"},
+  {name:"Plagued Nest", difficulty:"8.5", boss:"1", treasure:"Yes", pots:"GLIFE, GDEX", date:"2025", size:"Long", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/l71FWP1.png"},
+  {name:"Cultist Hideout", difficulty:"7", boss:"1", treasure:"No", pots:"Life, Mana", date:"2017", size:"Long", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/on1ykYB.png"},
+  {name:"Fungal Cavern", difficulty:"7.5", boss:"1", treasure:"No", pots:"Life, GSPD, GDEX, GDEF, GATT, GVIT, GWIS", date:"2020", size:"Long", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/CLzxdEM.png"},
+  {name:"Crystal Cavern", difficulty:"7.5", boss:"1", treasure:"No", pots:"Life, GSPD, GDEX, GDEF, GATT, GVIT, GWIS", date:"2020", size:"Long", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/Cd6RD9G.png"},
+  {name:"Spectral Penitentiary", difficulty:"8", boss:"2", treasure:"No", pots:"GDEF, GMP, SPD, VIT, WIS, ATT, Mana", date:"2021", size:"Long", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/o9yNqBT.png"},
+  {name:"Lost Halls", difficulty:"8", boss:"2", treasure:"Yes", pots:"ATT, DEF, Life, Mana", date:"2017", size:"Long", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/DwuQOQQ.png"},
+  {name:"Sulfurous Wetlands", difficulty:"6", boss:"1", treasure:"Yes", pots:"Mana, GSPD, GDEX, GDEF, GATT, GVIT, GWIS", date:"2025", size:"Long", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/88fMxeA.png"},
+  {name:"The Third Dimension", difficulty:"6", boss:"2", treasure:"Yes", pots:"GWIS, GATT, Mana, Life, VIT, DEF", date:"2025", size:"Long", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/Z5CG76m.png"},
+  {name:"The Void", difficulty:"8.5", boss:"1", treasure:"No", pots:"Life, Mana", date:"2017", size:"Arena", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/ijlxjJM.png"},
+  {name:"Ice Citadel", difficulty:"7", boss:"1", treasure:"No", pots:"Life, GM, GDEF, GWIS, GSPD", date:"2025", size:"Long", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/WDJobOf.png"},
+  {name:"Kogbold Steamworks", difficulty:"8", boss:"2", treasure:"No", pots:"GSPD, GATT, GDEF, GDEX, GVIT, GWIS", date:"2022", size:"Long", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/dohicSR.png"},
+  {name:"Advanced Kogbold Steamworks", difficulty:"10", boss:"2", treasure:"No", pots:"GSPD, GATT, GDEF, GDEX, GVIT, GWIS", date:"2023", size:"Long", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/k8pLiJV.png"},
+  {name:"Oryx's Sanctuary", difficulty:"9.5", boss:"2", treasure:"No", pots:"GL, GM", date:"2019", size:"Medium", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/JGnMCv2.png"},
+  {name:"The Shatters", difficulty:"10", boss:"3", treasure:"No", pots:"GATT, GDEF, GMP, GWIS, GLIFE, GVIT", date:"2021", size:"Long", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/yA4tlry.png"},
+  {name:"High Tech Terror", difficulty:"6.5", boss:"1", treasure:"No", pots:"GWIS, Mana, Life", date:"2020", size:"Arena", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/2SwppYx.png"},
+  {name:"Moonlight Village", difficulty:"9", boss:"3", treasure:"No", pots:"GLIFE, GVIT, GWIS", date:"2025", size:"Arena", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/CHqjDCE.png"},
+  {name:"The Tavern", difficulty:"5.5", boss:"3", treasure:"No", pots:"GVIT, VIT, Mana", date:"2023", size:"Arena", portalImg: "https://www.realmeye.com/s/a/img/wiki/i/DwtjA17.png"}
 ];
-function updateList(){
-  const dl=document.getElementById("dungeon-list");
-  dl.innerHTML="";
 
-  const sorted = remaining
-    .map(name => dungeons.find(d=>d.name===name))
-    .sort((a,b)=>Number(a.difficulty) - Number(b.difficulty));
-
-  sorted.forEach(d=>{
-    const o=document.createElement("option");
-    o.value=d.name;
-    dl.appendChild(o);
-  });
-}
-
-function applySeed(){
-  const s=document.getElementById("seed-input").value.trim();
-  manualSeed = s !== "" ? s : null;
+function toggleDailyMode() {
+  isDailyMode = !isDailyMode;
+  const btn = document.getElementById("daily-btn");
+  if (isDailyMode) {
+    btn.classList.add("active");
+    btn.textContent = "Daily Mode ✓";
+  } else {
+    btn.classList.remove("active");
+    btn.textContent = "Daily Mode";
+  }
   newGame();
 }
 
 function submitGuess(){
-  const val=document.getElementById("dungeon-input").value;
-  const g=dungeons.find(d=>normalize(d.name)===normalize(val));
+  const val = document.getElementById("dungeon-input").value.trim();
+  const g = dungeons.find(d => normalize(d.name) === normalize(val));
   if(!g) return;
 
-  remaining = remaining.filter(x=>x!==g.name);
+  remaining = remaining.filter(x => x !== g.name);
   updateList();
 
-  const r=document.createElement("div");
-  r.className="row";
+  const r = document.createElement("div");
+  r.className = "row";
 
-  /* ✅ Portal image from drips.pw */
-  r.innerHTML = `
-    <div class="portal">
-      <img src="${getPortalURL(g.name)}" class="portal-img">
-    </div>
-  `;
+  const portalDiv = document.createElement("div");
+  portalDiv.className = "portal";
+  if (g.portalImg) {
+    portalDiv.innerHTML = `<img src="${g.portalImg}" class="portal-img" alt="${g.name} Portal">`;
+  } else {
+    portalDiv.innerHTML = `<img src="" class="portal-img" alt="No image">`;
+  }
+  r.appendChild(portalDiv);
 
-  ["difficulty","boss","treasure","pots","date","size"].forEach((k,i)=>{
-    const c=document.createElement("div");
-    c.className="cell " + compare(g[k], target[k], k==="pots");
+  ["difficulty","boss","treasure","pots","date","size"].forEach((k, i) => {
+    const c = document.createElement("div");
+    c.className = "cell " + compare(g[k], target[k], k === "pots");
     c.textContent = g[k];
     r.appendChild(c);
-    setTimeout(()=>c.classList.add("reveal"), i*70);
+    setTimeout(() => c.classList.add("reveal"), i * 70);
   });
 
   document.getElementById("history").appendChild(r);
@@ -357,16 +323,44 @@ function submitGuess(){
   document.getElementById("dungeon-input").value = "";
 }
 
-function newGame(){
+function updateList(){
+  const dl = document.getElementById("dungeon-list");
+  dl.innerHTML = "";
 
-  if(manualSeed){
+  const sorted = remaining
+    .map(name => dungeons.find(d => d.name === name))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  sorted.forEach(d => {
+    const o = document.createElement("option");
+    o.value = d.name;
+    dl.appendChild(o);
+  });
+}
+
+function applySeed(){
+  const s = document.getElementById("seed-input").value.trim();
+  manualSeed = s !== "" ? s : null;
+  isDailyMode = false; // Désactive le daily si on met un seed manuel
+  document.getElementById("daily-btn").classList.remove("active");
+  document.getElementById("daily-btn").textContent = "Daily Mode";
+  newGame();
+}
+
+function newGame(){
+  if (isDailyMode) {
+    const dailySeed = getDailySeed();
+    target = dungeons[dailySeed % dungeons.length];
+  } 
+  else if(manualSeed){
     const h = hashSeed(manualSeed);
     target = dungeons[h % dungeons.length];
-  } else {
-    target = dungeons[Math.floor(Math.random()*dungeons.length)];
+  } 
+  else {
+    target = dungeons[Math.floor(Math.random() * dungeons.length)];
   }
 
-  remaining = dungeons.map(d=>d.name);
+  remaining = dungeons.map(d => d.name);
 
   document.getElementById("history").innerHTML = "";
   document.getElementById("message").textContent = "";
