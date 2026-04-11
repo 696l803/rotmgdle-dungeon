@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <title>RotMGDLE – Home</title>
@@ -8,52 +8,68 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
-:root { --gold:#ffcc00; }
-* { box-sizing:border-box; }
+:root { --gold: #ffcc00; }
 
-body{
-  font-family:'Press Start 2P', system-ui;
-  background:linear-gradient(#1a1a2e,#0f0f1f);
-  color:#eee;
-  margin:0;
-  padding:16px;
-  text-align:center;
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Press Start 2P', system-ui;
+  background: linear-gradient(#1a1a2e, #0f0f1f);
+  color: #eee;
+  margin: 0;
+  padding: 40px 20px;
+  text-align: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-h1{
-  color:var(--gold);
-  text-shadow:0 0 15px var(--gold);
+h1 {
+  color: var(--gold);
+  text-shadow: 0 0 20px var(--gold);
+  font-size: 3.2rem;
+  margin: 0 0 60px 0;
+  letter-spacing: 4px;
 }
 
-.game-container{
-  max-width:1400px;
-  margin:auto;
-  background:#16213e;
-  border:4px solid var(--gold);
-  border-radius:12px;
-  padding:40px;
-  margin-top:40px;
+.game-container {
+  max-width: 520px;           /* Cadre réduit et élégant pour PC */
+  width: 100%;
+  background: #16213e;
+  border: 5px solid var(--gold);
+  border-radius: 20px;
+  padding: 50px 40px;
+  box-shadow: 0 0 40px rgba(255, 204, 0, 0.2);
 }
 
-/* ✅ MENU TEXTE CLIQUABLE */
-.menu-links{
-  margin-top:20px;
-  display:flex;
-  flex-direction:column;
-  gap:28px;
-  font-size:20px;
+.menu-links {
+  display: flex;
+  flex-direction: column;
+  gap: 38px;
+  font-size: 1.65rem;
 }
 
-.menu-link{
-  text-decoration:none;
-  color:#eee;
-  transition:0.15s;
+.menu-link {
+  text-decoration: none;
+  color: #eee;
+  padding: 14px 0;
+  transition: all 0.25s ease;
+  letter-spacing: 2px;
 }
 
-.menu-link:hover{
-  color:var(--gold);
-  text-shadow:0 0 10px var(--gold);
-  transform:scale(1.05);
+.menu-link:hover {
+  color: var(--gold);
+  text-shadow: 0 0 15px var(--gold);
+  transform: scale(1.07);
+}
+
+/* Légère adaptation pour écrans très larges */
+@media (min-width: 1400px) {
+  .game-container {
+    max-width: 560px;
+  }
 }
 </style>
 </head>
@@ -65,7 +81,6 @@ h1{
 <div class="game-container">
 
   <div class="menu-links">
-
     <a href="#" class="menu-link">
       ✏️ ITEMS ✏️
     </a>
@@ -77,7 +92,6 @@ h1{
     <a href="#" class="menu-link">
       🎵 MUSIC 🎵
     </a>
-
   </div>
 
 </div>
