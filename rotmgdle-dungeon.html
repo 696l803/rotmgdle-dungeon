@@ -159,7 +159,7 @@ button{
 <datalist id="dungeon-list"></datalist>
 
 <div id="message" style="margin-top:15px;color:#22c55e;"></div>
-<button id="new-game-btn" style="display:none;margin-top:15px;" onclick="newGame()">REJOUER</button>
+<button id="new-game-btn" style="display:none;margin-top:15px;" onclick="newGame()">PLAY AGAIN</button>
 
 </div>
 
@@ -316,7 +316,7 @@ function submitGuess(){
 
   if(g.name === target.name){
     document.getElementById("dungeon-input").disabled = true;
-    document.getElementById("message").textContent = "✅ Donjon trouvé !";
+    document.getElementById("message").textContent = "✅ Dungeon Found !";
     document.getElementById("new-game-btn").style.display = "block";
   }
 
