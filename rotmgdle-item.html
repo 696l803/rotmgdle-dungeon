@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>RotMGDLE – Items</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+:root { --gold:#ffcc00; }
+* { box-sizing:border-box; }
+
+body{
+  font-family:'Press Start 2P', system-ui;
+  background:linear-gradient(#1a1a2e,#0f0f1f);
+  color:#eee;
+  margin:0;
+  padding:16px;
+  text-align:center;
+}
+
+h1{
+  color:var(--gold);
+  text-shadow:0 0 15px var(--gold);
+}
+
+.subtitle{color:#aaa;margin-bottom:20px;}
+
+.game-container{
+  max-width:1400px;
+  margin:auto;
+  background:#16213e;
+  border:4px solid var(--gold);
+  border-radius:12px;
+  padding:20px;
+}
+
+.grid,.row{
+  display:grid;
+  grid-template-columns:140px 14% 18% 10% 28% 12%;
+  gap:10px;
+}
+
+.header{
+  background:#0f3460;
+  color:var(--gold);
+  padding:12px 10px 12px 18px;
+  border:2px solid #444;
+  font-size:12px;
+  text-align:left;
+}
+
+.row{ margin:6px 0; }
+.row > div{ padding-left:12px; text-align:left; }
+
+.cell-img{
+  background:#1e2937;
+  border:3px solid #555;
+  display:flex;
+  align-items:center;
+  padding:6px;
+}
+
+.item-img{
+  width:48px;
+  height:48px;
+  image-rendering:pixelated;
+}
+
+.cell{
+  background:#1e2937;
+  border:3px solid #555;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:11px;
+  padding:6px;
+  transform:scaleY(0);
+  opacity:0;
+}
+
+.cell.reveal{ animation:flip .35s forwards; }
+@keyframes flip{ to{ transform:scaleY(1); opacity:1; } }
+
+.green{ background:#22c55e !important; color:#000; }
+.orange{ background:#f59e0b !important; color:#000; }
+.red{ background:#ef4444 !important; color:#000; }
+
+input{
+  flex:1;
+  padding:14px;
+  border:3px solid var(--gold);
+  background:#1e2937;
+  color:#eee;
+  border-radius:8px;
+}
+
+button{
+  font-family:'Press Start 2P';
+  padding:14px 20px;
+  background:#22c55e;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.daily-btn{ background:#f59e0b !important; color:#000; }
+.daily-btn.active{ background:#22c55e !important; }
+</style>
+</head>
+
+<body>
+<h1>ROTMGDLE</h1>
+<div class="subtitle">Items Mode</div>
+
+<div class="game-container">
+  <div class="grid">
+    <div class="header">IMAGE</div>
+    <div class="header">SLOT</div>
+    <div class="header">CLASS</div>
+    <div class="header">BAG</div>
+    <div class="header">DROP IN DUNGEON</div>
+    <div class="header">COLORS</div>
+  </div>
+
+  <div id="history"></div>
+
+  <div style="display:flex;gap:10px;margin-top:15px;">
+    <input id="item-input" list="item-list">
+    <button onclick="submitGuess()">GUESS</button>
+  </div>
+
+  <div style="margin-top:15px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+    <input id="seed-input" placeholder="Enter seed (optional)" style="width:260px;">
+    <button onclick="applySeed()">Set Seed</button>
+    <button id="daily-btn" class="daily-btn" onclick="toggleDailyMode()">Daily Mode</button>
+  </div>
+
+  <datalist id="item-list"></datalist>
+  <div id="message" style="margin-top:15px;color:#22c55e;"></div>
+  <button id="new-game-btn" style="display:none;margin-top:15px;" onclick="newGame()">PLAY AGAIN</button>
+</div>
+
+<script>
+function normalize(v){ return v.toLowerCase().trim(); }
+
+function hashSeed(str){
+  let h=0;
+  for(let i=0;i<str.length;i++) h=Math.imul(31,h)+str.charCodeAt(i)|0;
+  return Math.abs(h);
+}
+
+function getDailySeed(){
+  let s = localStorage.getItem("rotmgdle_daily_seed");
+  if(!s){
+    s = Math.floor(Math.random()*1e9).toString();
+    localStorage.setItem("rotmgdle_daily_seed", s);
+  }
+  return hashSeed(s);
+}
+
+function cmpSimple(a,b){
+  return normalize(a)===normalize(b) ? "green" : "red";
+}
+
+function cmpClasses(g,t,slot){
+  if(normalize(slot)==="ring") return "green";
+  const G=g.map(normalize), T=t.map(normalize);
+  const m=G.filter(x=>T.includes(x)).length;
+  if(m===T.length && G.length===T.length) return "green";
+  if(m>0) return "orange";
+  return "red";
+}
+
+function cmpDrops(g,t){
+  return g.some(d=>t.map(normalize).includes(normalize(d))) ? "green" : "red";
+}
+
+function cmpColors(g,t){
+  const G=g.map(normalize), T=t.map(normalize);
+  const m=G.filter(c=>T.includes(c)).length;
+  if(m===T.length && G.length===T.length) return "green";
+  if(m>0) return "orange";
+  return "red";
+}
+
+/* ===================== ITEMS ===================== */
+const items = [
+  {name:"Armor of Nil",img:"https://www.realmeye.com/s/a/img/wiki/i/0ZP9x0k.png",slot:"Armor",classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"],bag:"White",drops:["The Void"],colors:["Black","Purple"]},
+  {name:"Bow of Deep Enchantment",img:"https://www.realmeye.com/s/a/img/wiki/i/deep_enchantment.png",slot:"Weapon",classes:["Archer","Huntress","Bard"],bag:"Red",drops:["Multiple"],colors:["Black","White"]},
+  {name:"Bow of Mystical Energy",img:"https://www.realmeye.com/s/a/img/wiki/i/mystical_energy.png",slot:"Weapon",classes:["Archer","Huntress","Bard"],bag:"Red",drops:["Multiple"],colors:["White","Gold"]},
+  {name:"Cloak of the Planewalker",img:"https://www.realmeye.com/s/a/img/wiki/i/7Y1vMRJ.png",slot:"Ability",classes:["Rogue"],bag:"White",drops:["Sprite World"],colors:["White","Black"]},
+  {name:"Dominion Armor",img:"https://www.realmeye.com/s/a/img/wiki/i/dominion_armor.png",slot:"Armor",classes:["Knight","Warrior","Paladin"],bag:"Red",drops:["Multiple"],colors:["Grey","Gold"]},
+  {name:"Doom Bow",img:"https://www.realmeye.com/s/a/img/wiki/i/tQZ9VZ1.png",slot:"Weapon",classes:["Archer","Huntress","Bard"],bag:"White",drops:["Undead Lair"],colors:["White","Black"]},
+  {name:"Pixie-Enchanted Sword",img:"https://www.realmeye.com/s/a/img/wiki/i/pixie.png",slot:"Weapon",classes:["Knight","Warrior","Paladin"],bag:"Orange",drops:["Candyland hunting grounds"],colors:["Pink","White"]},
+  {name:"Ring of Decades",img:"https://www.realmeye.com/s/a/img/wiki/i/5c0R7F8.png",slot:"Ring",classes:["All"],bag:"White",drops:["Fungal Cavern"],colors:["Purple","Black"]},
+  {name:"Sword of the Colossus",img:"https://www.realmeye.com/s/a/img/wiki/i/sword_of_the_colossus.png",slot:"Weapon",classes:["Knight","Warrior","Paladin"],bag:"White",drops:["Lost halls"],colors:["Grey","Gold"]},
+  {name:"The Forgotten Crown",img:"https://www.realmeye.com/s/a/img/wiki/i/9lV1ZtI.png",slot:"Ring",classes:["All"],bag:"White",drops:["The Shatters"],colors:["Gold","White"]},
+  {name:"Void Bow",img:"https://www.realmeye.com/s/a/img/wiki/i/nYR01GI.gif",slot:"Weapon",classes:["Archer","Huntress","Bard"],bag:"White",drops:["The Void"],colors:["Purple","Black"]},
+  {name:"Wand of Evocation",img:"https://www.realmeye.com/s/a/img/wiki/i/evocation.png",slot:"Weapon",classes:["Priest","Sorcerer","Summoner","Druid"],bag:"Red",drops:["Multiple"],colors:["Gold","White"]},
+  {name:"Wand of Geb",img:"https://www.realmeye.com/s/a/img/wiki/i/wand_of_geb.png",slot:"Weapon",classes:["Priest","Sorcerer","Summoner","Druid"],bag:"Orange",drops:["Tomb of the Ancients"],colors:["Red","Gold"]},
+  {name:"Wand of Retribution",img:"https://www.realmeye.com/s/a/img/wiki/i/retribution.png",slot:"Weapon",classes:["Priest","Sorcerer","Summoner","Druid"],bag:"Red",drops:["Multiple"],colors:["Gold","White"]},
+  {name:"Wand of the Fallen",img:"https://www.realmeye.com/s/a/img/wiki/i/VJxFJQh.png",slot:"Weapon",classes:["Priest","Sorcerer","Summoner","Druid"],bag:"White",drops:["Mountain Temple"],colors:["Pink","White"]},
+  {name:"Wyrmhide Armor",img:"https://www.realmeye.com/s/a/img/wiki/i/wyrmhide.png",slot:"Armor",classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"],bag:"Red",drops:["Multiple"],colors:["Green","Brown"]},
+  {
+    name:"Annihilation Armor",
+    img:"https://www.realmeye.com/s/a/img/wiki/i/annihilation_armor.png",
+    slot:"Armor",
+    classes:["Knight","Warrior","Paladin"],
+    bag:"Red",
+    drops:["Multiple"],
+    colors:["Blue","Yellow"]
+  }
+];
+
+let target, remaining, manualSeed=null, daily=false;
+
+function updateList(){
+  const dl=document.getElementById("item-list");
+  dl.innerHTML="";
+  remaining.slice().sort((a,b)=>a.localeCompare(b))
+    .forEach(n=>{
+      const o=document.createElement("option");
+      o.value=n;
+      dl.appendChild(o);
+    });
+}
+
+function newGame(){
+  const s = daily ? getDailySeed() :
+          manualSeed ? hashSeed(manualSeed) :
+          Math.floor(Math.random()*1e9);
+  target = items[s % items.length];
+  remaining = items.map(i=>i.name);
+  document.getElementById("history").innerHTML="";
+  document.getElementById("message").textContent="";
+  document.getElementById("item-input").disabled=false;
+  document.getElementById("new-game-btn").style.display="none";
+  updateList();
+}
+
+function applySeed(){
+  manualSeed=document.getElementById("seed-input").value.trim();
+  daily=false;
+  document.getElementById("daily-btn").classList.remove("active");
+  newGame();
+}
+
+function toggleDailyMode(){
+  daily=!daily;
+  manualSeed=null;
+  document.getElementById("daily-btn").classList.toggle("active",daily);
+  newGame();
+}
+
+function submitGuess(){
+  const val=document.getElementById("item-input").value;
+  const g=items.find(i=>normalize(i.name)===normalize(val));
+  if(!g) return;
+
+  remaining=remaining.filter(x=>x!==g.name);
+  updateList();
+
+  const r=document.createElement("div");
+  r.className="row";
+
+  const imgC=document.createElement("div");
+  imgC.className="cell-img";
+  const im=document.createElement("img");
+  im.src=g.img; im.className="item-img";
+  imgC.appendChild(im);
+  r.appendChild(imgC);
+
+  const dropText=g.drops[0]==="Multiple"||g.drops.length>1?"Multiple":g.drops[0];
+
+  const cells=[
+    [g.slot,target.slot,cmpSimple,g.slot],
+    ["class",null,null,g.classes.join(", ")],
+    [g.bag,target.bag,cmpSimple,g.bag],
+    [g.drops,target.drops,cmpDrops,dropText],
+    [g.colors,target.colors,cmpColors,g.colors.join(", ")]
+  ];
+
+  cells.forEach((d,i)=>{
+    const c=document.createElement("div");
+    c.className="cell "+(i===1 ? cmpClasses(g.classes,target.classes,target.slot) : d[2](d[0],d[1]));
+    c.textContent=d[3];
+    r.appendChild(c);
+  });
+
+  document.getElementById("history").appendChild(r);
+  [...r.children].forEach((c,i)=>setTimeout(()=>c.classList.add("reveal"),i*70));
+
+  if(g.name===target.name){
+    document.getElementById("item-input").disabled=true;
+    document.getElementById("message").textContent="✅ Item Found!";
+    document.getElementById("new-game-btn").style.display="block";
+  }
+
+  document.getElementById("item-input").value="";
+}
+
+newGame();
+</script>
+</body>
+</html>
