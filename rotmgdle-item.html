@@ -59,25 +59,22 @@ h1{
   display:flex;
   align-items:center;
   padding:6px;
+  min-height:60px;
 }
 
-.item-img{
-  width:48px;
-  height:48px;
-  image-rendering:pixelated;
-}
 
 .cell{
   background:#1e2937;
   border:3px solid #555;
   display:flex;
-  justify-content:center;
+  justify-content:flex-start; /* ⬅️ clé */
   align-items:center;
   font-size:11px;
-  padding:6px;
+  padding:6px 12px;           /* un peu plus à gauche */
   transform:scaleY(0);
   opacity:0;
 }
+
 
 .cell.reveal{ animation:flip .35s forwards; }
 @keyframes flip{ to{ transform:scaleY(1); opacity:1; } }
@@ -114,6 +111,7 @@ button{
 <div class="subtitle">Items Mode</div>
 
 <div class="game-container">
+
   <div class="grid">
     <div class="header">IMAGE</div>
     <div class="header">SLOT</div>
@@ -159,9 +157,7 @@ function getDailySeed(){
   return hashSeed(s);
 }
 
-function cmpSimple(a,b){
-  return normalize(a)===normalize(b) ? "green" : "red";
-}
+function cmpSimple(a,b){ return normalize(a)===normalize(b) ? "green" : "red"; }
 
 function cmpClasses(g,t,slot){
   if(normalize(slot)==="ring") return "green";
@@ -185,32 +181,78 @@ function cmpColors(g,t){
 }
 
 /* ===================== ITEMS ===================== */
+/* Images volontairement laissées vides */
 const items = [
-  {name:"Armor of Nil",img:"https://www.realmeye.com/s/a/img/wiki/i/0ZP9x0k.png",slot:"Armor",classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"],bag:"White",drops:["The Void"],colors:["Black","Purple"]},
-  {name:"Bow of Deep Enchantment",img:"https://www.realmeye.com/s/a/img/wiki/i/deep_enchantment.png",slot:"Weapon",classes:["Archer","Huntress","Bard"],bag:"Red",drops:["Multiple"],colors:["Black","White"]},
-  {name:"Bow of Mystical Energy",img:"https://www.realmeye.com/s/a/img/wiki/i/mystical_energy.png",slot:"Weapon",classes:["Archer","Huntress","Bard"],bag:"Red",drops:["Multiple"],colors:["White","Gold"]},
-  {name:"Cloak of the Planewalker",img:"https://www.realmeye.com/s/a/img/wiki/i/7Y1vMRJ.png",slot:"Ability",classes:["Rogue"],bag:"White",drops:["Sprite World"],colors:["White","Black"]},
-  {name:"Dominion Armor",img:"https://www.realmeye.com/s/a/img/wiki/i/dominion_armor.png",slot:"Armor",classes:["Knight","Warrior","Paladin"],bag:"Red",drops:["Multiple"],colors:["Grey","Gold"]},
-  {name:"Doom Bow",img:"https://www.realmeye.com/s/a/img/wiki/i/tQZ9VZ1.png",slot:"Weapon",classes:["Archer","Huntress","Bard"],bag:"White",drops:["Undead Lair"],colors:["White","Black"]},
-  {name:"Pixie-Enchanted Sword",img:"https://www.realmeye.com/s/a/img/wiki/i/pixie.png",slot:"Weapon",classes:["Knight","Warrior","Paladin"],bag:"Orange",drops:["Candyland hunting grounds"],colors:["Pink","White"]},
-  {name:"Ring of Decades",img:"https://www.realmeye.com/s/a/img/wiki/i/5c0R7F8.png",slot:"Ring",classes:["All"],bag:"White",drops:["Fungal Cavern"],colors:["Purple","Black"]},
-  {name:"Sword of the Colossus",img:"https://www.realmeye.com/s/a/img/wiki/i/sword_of_the_colossus.png",slot:"Weapon",classes:["Knight","Warrior","Paladin"],bag:"White",drops:["Lost halls"],colors:["Grey","Gold"]},
-  {name:"The Forgotten Crown",img:"https://www.realmeye.com/s/a/img/wiki/i/9lV1ZtI.png",slot:"Ring",classes:["All"],bag:"White",drops:["The Shatters"],colors:["Gold","White"]},
-  {name:"Void Bow",img:"https://www.realmeye.com/s/a/img/wiki/i/nYR01GI.gif",slot:"Weapon",classes:["Archer","Huntress","Bard"],bag:"White",drops:["The Void"],colors:["Purple","Black"]},
-  {name:"Wand of Evocation",img:"https://www.realmeye.com/s/a/img/wiki/i/evocation.png",slot:"Weapon",classes:["Priest","Sorcerer","Summoner","Druid"],bag:"Red",drops:["Multiple"],colors:["Gold","White"]},
-  {name:"Wand of Geb",img:"https://www.realmeye.com/s/a/img/wiki/i/wand_of_geb.png",slot:"Weapon",classes:["Priest","Sorcerer","Summoner","Druid"],bag:"Orange",drops:["Tomb of the Ancients"],colors:["Red","Gold"]},
-  {name:"Wand of Retribution",img:"https://www.realmeye.com/s/a/img/wiki/i/retribution.png",slot:"Weapon",classes:["Priest","Sorcerer","Summoner","Druid"],bag:"Red",drops:["Multiple"],colors:["Gold","White"]},
-  {name:"Wand of the Fallen",img:"https://www.realmeye.com/s/a/img/wiki/i/VJxFJQh.png",slot:"Weapon",classes:["Priest","Sorcerer","Summoner","Druid"],bag:"White",drops:["Mountain Temple"],colors:["Pink","White"]},
-  {name:"Wyrmhide Armor",img:"https://www.realmeye.com/s/a/img/wiki/i/wyrmhide.png",slot:"Armor",classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"],bag:"Red",drops:["Multiple"],colors:["Green","Brown"]},
-  {
-    name:"Annihilation Armor",
-    img:"https://www.realmeye.com/s/a/img/wiki/i/annihilation_armor.png",
-    slot:"Armor",
-    classes:["Knight","Warrior","Paladin"],
-    bag:"Red",
-    drops:["Multiple"],
-    colors:["Blue","Yellow"]
-  }
+  {name:"Armor of Nil",img:"",slot:"Armor",classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"],bag:"White",drops:["The Void"],colors:["Black","Purple"]},
+  {name:"Bow of Deep Enchantment",img:"",slot:"Weapon",classes:["Archer","Huntress","Bard"],bag:"Red",drops:["Multiple"],colors:["Black","White"]},
+  {name:"Bow of Mystical Energy",img:"",slot:"Weapon",classes:["Archer","Huntress","Bard"],bag:"Red",drops:["Multiple"],colors:["White","Gold"]},
+  {name:"Cloak of the Planewalker",img:"",slot:"Ability",classes:["Rogue"],bag:"White",drops:["Sprite World"],colors:["White","Black"]},
+  {name:"Dominion Armor",img:"",slot:"Armor",classes:["Knight","Warrior","Paladin","Samurai","Kensei"],bag:"Red",drops:["Multiple"],colors:["Grey","Gold"]},
+  {name:"Doom Bow",img:"",slot:"Weapon",classes:["Archer","Huntress","Bard"],bag:"White",drops:["Undead Lair"],colors:["White","Black"]},
+  {name:"Pixie-Enchanted Sword",img:"",slot:"Weapon",classes:["Knight","Warrior","Paladin"],bag:"Orange",drops:["Candyland Hunting Grounds"],colors:["Pink","White"]},
+  {name:"Ring of Decades",img:"",slot:"Ring",classes:["All"],bag:"White",drops:["Fungal Cavern","Crystal Cavern"],colors:["Purple","Black"]},
+  {name:"Sword of the Colossus",img:"",slot:"Weapon",classes:["Knight","Warrior","Paladin"],bag:"White",drops:["Lost Halls"],colors:["White","Gold"]},
+  {name:"The Forgotten Crown",img:"",slot:"Ring",classes:["All"],bag:"White",drops:["The Shatters"],colors:["Black"]},
+  {name:"Void Bow",img:"",slot:"Weapon",classes:["Archer","Huntress","Bard"],bag:"White",drops:["The Void"],colors:["Purple","Black"]},
+  {name:"Wand of Evocation",img:"",slot:"Weapon",classes:["Priest","Sorcerer","Summoner","Druid"],bag:"Red",drops:["Multiple"],colors:["Gold","Red"]},
+  {name:"Wand of Geb",img:"",slot:"Weapon",classes:["Priest","Sorcerer","Summoner","Druid"],bag:"Orange",drops:["Tomb of the Ancients"],colors:["Brown"]},
+  {name:"Wand of Retribution",img:"",slot:"Weapon",classes:["Priest","Sorcerer","Summoner","Druid"],bag:"Red",drops:["Multiple"],colors:["Gold","Blue"]},
+  {name:"Wand of the Fallen",img:"",slot:"Weapon",classes:["Priest","Sorcerer","Summoner","Druid"],bag:"White",drops:["Mountain Temple"],colors:["Pink","Brown"]},
+{ name:"Spider Shuriken", img:"", slot:"Ability", classes:["Ninja"], bag:"Cyan", drops:["Spider Den"], colors:["Black","Red"] },
+{ name:"Spider's Eye Ring", img:"", slot:"Ring", classes:["All"], bag:"Cyan", drops:["Spider Den"], colors:["Purple","Gold"]},
+{ name:"Poison Fang Dagger", img:"", slot:"Weapon", classes:["Rogue","Assassin","Trickster"], bag:"Cyan", drops:["Spider Den"], colors:["Green","White"] },
+{ name:"Corsair Ring", img:"", slot:"Ring", classes:["All"], bag:"Cyan", drops:["Pirate Cave"], colors:["Red","Gold"] },
+{ name:"Lifebringing Lotus", img:"", slot:"Ability", classes:["Huntress"], bag:"Orange", drops:["Magic Woods"], colors:["Green","Pink"] },
+{ name:"Hollyhock Hide", img:"", slot:"Armor", classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"], bag:"Orange", drops:["Magic Woods"], colors:["Green","White"]},
+{ name:"Orb of Sweet Demise", img:"", slot:"Ability", classes:["Mystic"], bag:"Cyan", drops:["The Hive"], colors:["Yellow"]},
+{ name:"Honey Scepter", img:"", slot:"Ability", classes:["Sorcerer"], bag:"Cyan", drops:["The Hive"], colors:["Yellow"] },
+{ name:"Staff of the Crystal Serpent", img:"", slot:"Weapon", classes:["Wizard","Mystic","Necromancer"], bag:"Cyan", drops:["Forbidden Jungle"], colors:["Gold","Purple"] },
+{ name:"Snake Eye Ring", img:"", slot:"Ring", classes:["All"], bag:"White", drops:["Snake Pit"], colors:["Green","Gold"] },
+{ name:"Snake Skin Shield", img:"", slot:"Ability", classes:["Knight"], bag:"White", drops:["Snake Pit"], colors:["Green"] },
+{ name:"Snake Skin Armor", img:"", slot:"Armor", classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"], bag:"Cyan", drops:["Snake Pit"], colors:["Green"] },
+{ name:"Seal of the Enchanted Forest", img:"", slot:"Ability", classes:["Paladin"], bag:"Orange", drops:["Candyland Hunting Grounds"], colors:["Pink","White"] },
+
+{ name:"Spectral Sword", img:"", slot:"Weapon", classes:["Warrior","Knight","Paladin"], bag:"White", drops:["Undead Lair"], colors:["White"] },
+{ name:"Candy-Coated Armor", img:"", slot:"Armor", classes:["Warrior","Knight","Paladin","Samurai","Kensei"], bag:"White", drops:["Candyland Hunting Grounds"], colors:["White","Red"] },
+{ name:"Ring of Skeletal Specters", img:"", slot:"Ring", classes:["All"], bag:"White", drops:["Undead Lair"], colors:["Black","White"] },
+{ name:"Candy Ring", img:"", slot:"Ring", classes:["All"], bag:"Cyan", drops:["Candyland Hunting Grounds"], colors:["Blue","Pink"] },
+{ name:"Ring of Pure Wishes", img:"", slot:"Ring", classes:["All"], bag:"Orange", drops:["Candyland Hunting Grounds"], colors:["Pink","Gray"] },
+{ name:"Mace of the Celestial Forest", img:"", slot:"Ability", classes:["Summoner"], bag:"White", drops:["Sprite World"], colors:["Purple","Pink"] },
+{ name:"Ornate Armor", img:"", slot:"Armor", classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"], bag:"Orange", drops:["Ancient Ruins"], colors:["Brown","Gold"] },
+{ name:"Wandering Souls Spell", img:"", slot:"Ability", classes:["Wizard"], bag:"White", drops:["Undead Lair"], colors:["Black","Blue"] },
+{ name:"Bubblegum Bucket", img:"", slot:"Ability", classes:["Warrior"], bag:"White", drops:["Candyland Hunting Grounds"], colors:["White","Cyan"] },
+{ name:"Aquamarine Amulet", img:"", slot:"Ring", classes:["All"], bag:"Orange", drops:["Ancient Ruins"], colors:["Brown","White"] },
+{ name:"Embellished Quiver", img:"", slot:"Ability", classes:["Archer"], bag:"Orange", drops:["Ancient Ruins"], colors:["Gold","Brown"] },
+{ name:"Staff of Extreme Prejudice", img:"", slot:"Weapon", classes:["Wizard","Mystic","Necromancer"], bag:"White", drops:["Sprite World"], colors:["Black","Red"] },
+{ name:"Resplendent Bow", img:"", slot:"Weapon", classes:["Archer","Huntress","Bard"], bag:"Orange", drops:["Ancient Ruins"], colors:["Brown","Gold"] },
+{ name:"Arcane Rapier", img:"", slot:"Weapon", classes:["Knight","Warrior","Paladin"], bag:"White", drops:["Ancient Ruins"], colors:["White","Brown"] },
+{ name:"Wand of the Bulwark", img:"", slot:"Weapon", classes:["Priest","Sorcerer","Summoner","Druid"], bag:"White", drops:["Snake Pit"], colors:["Purple","Black"] },
+{ name:"Amber Encrusted Helmet", img:"", slot:"Ability", classes:["Warrior"], bag:"White", drops:["Ancient Ruins"], colors:["Brown","Gold"] },
+{ name:"Sandstone Seal", img:"", slot:"Ability", classes:["Paladin"], bag:"White", drops:["Ancient Ruins"], colors:["Brown","Gold"]},
+{ name:"Sprite Wand", img:"", slot:"Weapon", classes:["Wizard","Priest","Mystic","Necromancer","Sorcerer","Summoner"], bag:"Cyan", drops:["Sprite World"], colors:["Pink","Blue","White","Green"] },
+{ name:"Snake Charmer Pungi", img:"", slot:"Ability", classes:["Bard"], bag:"White", drops:["Snake Pit"], colors:["Green","Black"] },
+{ name:"Crystal Bone Ring", img:"", slot:"Ring", classes:["All"], bag:"Cyan", drops:["Forbidden Jungle"], colors:["Orange","Purple"] },
+{ name:"Robe of the Tlatoani", img:"", slot:"Armor", classes:["Wizard","Priest","Mystic","Necromancer","Sorcerer","Summoner","Bard"], bag:"Cyan", drops:["Forbidden Jungle"], colors:["Orange","Black"] },
+
+{ name:"Fairy Plate", img:"", slot:"Armor", classes:["Warrior","Knight","Paladin","Samurai","Kensei"], bag:"Orange", drops:["Candyland Hunting Grounds"], colors:["Pink","White"] },
+{ name:"Cracked Crystal Skull", img:"", slot:"Ability", classes:["Necromancer"], bag:"Cyan", drops:["Forbidden Jungle"], colors:["Purple","Black"] },
+{ name:"Bramble Bow", img:"", slot:"Weapon", classes:["Archer","Bard","Huntress"], bag:"Cyan", drops:["Forest Maze"], colors:["Green","Brown"] },
+{ name:"Chrysanthemum Corsage", img:"", slot:"Ring", classes:["All"], bag:"Orange", drops:["Magic Woods"], colors:["Green","Pink"]},
+{ name:"Cocoon Quiver", img:"", slot:"Ability", classes:["Archer"], bag:"Cyan", drops:["Forest Maze"], colors:["Green"] },	
+{ name:"Enchantment Orb", img:"", slot:"Ability", classes:["Mystic"], bag:"White", drops:["Magic Woods"], colors:["Green"] },
+{ name:"Bergenia Bow", img:"", slot:"Weapon", classes:["Archer","Huntress","Bard"], bag:"Orange", drops:["Magic Woods"], colors:["Green","Brown"] },
+{ name:"Spirit Staff", img:"", slot:"Weapon", classes:["Wizard","Mystic","Necromancer"], bag:"White", drops:["Magic Woods"], colors:["Green","Brown"] },
+{ name:"Void Blade", img:"", slot:"Weapon", classes:["Ninja","Samurai","Kensei"], bag:"White", drops:["Toxic Sewers"], colors:["Purple","Blue"] },
+{ name:"Helm of the Juggernaut", img:"", slot:"Ability", classes:["Warrior"], bag:"White", drops:["World"], colors:["White","Blue"] },{ name:"Robe of the Mad Scientist", img:"", slot:"Armor", classes:["Wizard","Priest","Mystic","Necromancer","Sorcerer","Summoner","Bard"], bag:"White", drops:["Mad Lab"], colors:["Gray","Black"] },
+{ name:"Shield of Flowing Clarity", img:"", slot:"Ability", classes:["Knight"], bag:"White", drops:["Magic Woods"], colors:["Blue","White"] },
+{ name:"Woodland Robe", img:"", slot:"Armor", classes:["Wizard","Priest","Mystic","Necromancer","Sorcerer","Summoner","Bard"], bag:"White", drops:["Magic Woods"], colors:["Green","Brown"] },
+{ name:"Fairy Ring", img:"", slot:"Ring", classes:["All"], bag:"White", drops:["Magic Woods"], colors:["Brown","Green"] },
+{ name:"Ring of the Pyramid", img:"", slot:"Ring", classes:["All"], bag:"White", drops:["Tomb of the Ancients"], colors:["Gold"] },
+{ name:"Pirate King's Cutlass", img:"", slot:"Weapon", classes:["Knight","Warrior","Paladin"], bag:"White", drops:["Deadwater Docks"], colors:["Silver","Gold"] },
+{name:"Breastplate of New Life", img:"", slot:"Armor", classes:["Knight","Warrior","Paladin","Samurai","Kensei"], bag:"White", drops:["Lost Halls"], colors:["White","Gold"]},
+{name:"Doku No Ken", img:"", slot:"Weapon", classes:["Ninja","Samurai","Kensei"], bag:"White", drops:["The Crawling Depths"], colors:["Purple","Green"]},
+  {name:"Wyrmhide Armor",img:"",slot:"Armor",classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"],bag:"Red",drops:["Multiple"],colors:["Green"]},
+  {name:"Annihilation Armor",img:"",slot:"Armor",classes:["Knight","Warrior","Paladin","Samurai","Kensei"],bag:"Red",drops:["Multiple"],colors:["Blue","Yellow"]}
 ];
 
 let target, remaining, manualSeed=null, daily=false;
@@ -230,8 +272,10 @@ function newGame(){
   const s = daily ? getDailySeed() :
           manualSeed ? hashSeed(manualSeed) :
           Math.floor(Math.random()*1e9);
+
   target = items[s % items.length];
   remaining = items.map(i=>i.name);
+
   document.getElementById("history").innerHTML="";
   document.getElementById("message").textContent="";
   document.getElementById("item-input").disabled=false;
@@ -266,9 +310,6 @@ function submitGuess(){
 
   const imgC=document.createElement("div");
   imgC.className="cell-img";
-  const im=document.createElement("img");
-  im.src=g.img; im.className="item-img";
-  imgC.appendChild(im);
   r.appendChild(imgC);
 
   const dropText=g.drops[0]==="Multiple"||g.drops.length>1?"Multiple":g.drops[0];
