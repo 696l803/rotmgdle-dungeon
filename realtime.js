@@ -1,3 +1,4 @@
+console.log("✅ realtime.js chargé");
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
 // ✅ CONFIG SUPABASE (OK EN FRONTEND)
