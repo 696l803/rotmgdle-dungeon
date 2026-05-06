@@ -113,7 +113,7 @@ button{
 <div class="game-container">
 
   <div class="grid">
-    <div class="header">IMAGE</div>
+    <div class="header">ITEM</div>
     <div class="header">SLOT</div>
     <div class="header">CLASS</div>
     <div class="header">BAG</div>
@@ -160,23 +160,33 @@ function getDailySeed(){
 function cmpSimple(a,b){ return normalize(a)===normalize(b) ? "green" : "red"; }
 
 function cmpClasses(g,t,slot){
-  if(normalize(slot)==="ring") return "green";
-  const G=g.map(normalize), T=t.map(normalize);
-  const m=G.filter(x=>T.includes(x)).length;
-  if(m===T.length && G.length===T.length) return "green";
-  if(m>0) return "orange";
+  // ✅ Règle 1 : Ring → toujours vert
+  if (normalize(slot) === "ring") return "green";
+
+  // ✅ Règle 2 : All → toujours vert
+  if (g.map(normalize).includes("all")) return "green";
+
+  const G = g.map(normalize),
+        T = t.map(normalize);
+  const m = G.filter(x => T.includes(x)).length;
+
+  if (m === T.length && G.length === T.length) return "green";
+  if (m > 0) return "orange";
   return "red";
 }
+``
 
 function cmpDrops(g,t){
   return g.some(d=>t.map(normalize).includes(normalize(d))) ? "green" : "red";
 }
 
 function cmpColors(g,t){
-  const G=g.map(normalize), T=t.map(normalize);
-  const m=G.filter(c=>T.includes(c)).length;
-  if(m===T.length && G.length===T.length) return "green";
-  if(m>0) return "orange";
+  const G = g.map(normalize),
+        T = t.map(normalize);
+  const m = G.filter(c => T.includes(c)).length;
+
+  if (m === T.length && G.length === T.length) return "green";
+  if (m > 0) return "orange";
   return "red";
 }
 
@@ -201,19 +211,59 @@ const items = [
 { name:"Spider Shuriken", img:"", slot:"Ability", classes:["Ninja"], bag:"Cyan", drops:["Spider Den"], colors:["Black","Red"] },
 { name:"Spider's Eye Ring", img:"", slot:"Ring", classes:["All"], bag:"Cyan", drops:["Spider Den"], colors:["Purple","Gold"]},
 { name:"Poison Fang Dagger", img:"", slot:"Weapon", classes:["Rogue","Assassin","Trickster"], bag:"Cyan", drops:["Spider Den"], colors:["Green","White"] },
+ { name:"Toga Picta", img:"", slot:"Armor", classes:["Wizard","Priest","Necromancer","Mystic","Sorcerer","Summoner","Bard"], bag:"Orange", drops:["Undead Lair"], colors:["Gray","Black"] },
 { name:"Corsair Ring", img:"", slot:"Ring", classes:["All"], bag:"Cyan", drops:["Pirate Cave"], colors:["Red","Gold"] },
+{ name:"Edictum Praetoris", img:"", slot:"Staff", classes:["Wizard","Mystic","Necromancer"], bag:"Orange", drops:["Undead Lair"], colors:["Brown","Gray"] },
+{ name:"Prism of Dancing Swords", img:"", slot:"Prism", classes:["Trickster"], bag:"White", drops:["Puppet Master's Theatre"], colors:["Green"] },
 { name:"Lifebringing Lotus", img:"", slot:"Ability", classes:["Huntress"], bag:"Orange", drops:["Magic Woods"], colors:["Green","Pink"] },
 { name:"Hollyhock Hide", img:"", slot:"Armor", classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"], bag:"Orange", drops:["Magic Woods"], colors:["Green","White"]},
 { name:"Orb of Sweet Demise", img:"", slot:"Ability", classes:["Mystic"], bag:"Cyan", drops:["The Hive"], colors:["Yellow"]},
 { name:"Honey Scepter", img:"", slot:"Ability", classes:["Sorcerer"], bag:"Cyan", drops:["The Hive"], colors:["Yellow"] },
 { name:"Staff of the Crystal Serpent", img:"", slot:"Weapon", classes:["Wizard","Mystic","Necromancer"], bag:"Cyan", drops:["Forbidden Jungle"], colors:["Gold","Purple"] },
+{ name:"Acidic Armor", img:"", slot:"Armor", classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"], bag:"Orange", drops:["Toxic Sewers"], colors:["Green","White"] },
+{ name:"Toxin Tooth", img:"", slot:"Weapon", classes:["Rogue","Assassin","Trickster"], bag:"Orange", drops:["Toxic Sewers"], colors:["Green","White"] },
+{ name:"Pernicious Peridot", img:"", slot:"Ring", classes:["All"], bag:"Orange", drops:["Toxic Sewers"], colors:["Green"] },
+{ name:"Virulent Venom", img:"", slot:"Ability", classes:["Assassin"], bag:"Orange", drops:["Toxic Sewers"], colors:["Green","White"] },
 { name:"Snake Eye Ring", img:"", slot:"Ring", classes:["All"], bag:"White", drops:["Snake Pit"], colors:["Green","Gold"] },
 { name:"Snake Skin Shield", img:"", slot:"Ability", classes:["Knight"], bag:"White", drops:["Snake Pit"], colors:["Green"] },
 { name:"Snake Skin Armor", img:"", slot:"Armor", classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"], bag:"Cyan", drops:["Snake Pit"], colors:["Green"] },
+{ name:"Magician’s Robe", img:"", slot:"Armor", classes:["Wizard","Priest","Necromancer","Mystic","Sorcerer","Summoner","Bard"], bag:"Orange", drops:["Puppet Master's Theatre","Puppet Master's Encore"], colors:["Black","White"] },
 { name:"Seal of the Enchanted Forest", img:"", slot:"Ability", classes:["Paladin"], bag:"Orange", drops:["Candyland Hunting Grounds"], colors:["Pink","White"] },
+{ name:"Performer’s Hat", img:"", slot:"Ring", classes:["All"], bag:"Orange", drops:["Puppet Master's Theatre","Puppet Master's Encore"], colors:["Black","White"] },
+{ name:"Magic Wand", img:"", slot:"Weapon", classes:["Priest","Sorcerer","Summoner","Druid"], bag:"Orange", drops:["Puppet Master's Theatre","Puppet Master's Encore"], colors:["Black","White"] },
+{ name:"Lightshow Scepter", img:"", slot:"Ability", classes:["Sorcerer"], bag:"Orange", drops:["Puppet Master's Theatre","Puppet Master's Encore"], colors:["Black","White"] },
+{ name:"Conducting Wand", img:"", slot:"Weapon", classes:["Priest","Sorcerer","Summoner","Druid"], bag:"White", drops:["Mad Lab"], colors:["Black","Gray"] },
+{ name:"Deathless Crossbow", img:"", slot:"Weapon", classes:["Archer","Huntress","Bard"], bag:"Orange", drops:["Cursed Library"], colors:["Blue","Gray","White"] },
+{ name:"Grotesque Scepter", img:"", slot:"Ability", classes:["Sorcerer"], bag:"Orange", drops:["Mad Lab"], colors:["Gray","Green"] },
+{ name:"Abomination’s Wrath", img:"", slot:"Weapon", classes:["Priest","Sorcerer","Summoner","Druid"], bag:"Orange", drops:["Mad Lab"], colors:["Gray","Green"] },
+
+{ name:"Parasitic Concoction", slot:"Ability", classes:["Assassin"], bag:"Orange", drops:["Parasite Chambers"], colors:["Orange","Brown"] },
+{ name:"Hivemind Circlet", slot:"Ring", classes:["All"], bag:"Orange", drops:["Parasite Chambers"], colors:["Gray","Orange"] },
+{ name:"Recurring Terror Spell", slot:"Ability", classes:["Wizard"], bag:"White", drops:["Parasite Chambers"], colors:["White","Red"]},
+{ name:"Scepter of Devastation", slot:"Ability", classes:["Sorcerer"], bag:"White", drops:["Parasite Chambers"], colors:["White","Red"] },
+{ name:"Tome of Pain", slot:"Ability", classes:["Priest"], bag:"White", drops:["Parasite Chambers"], colors:["Red","White"] },
+
+{ name:"Garment of the Beast", slot:"Armor", classes:["Rogue","Assassin","Trickster","Ninja","Druid"], bag:"Orange", drops:["Parasite Chambers"], colors:["Red","Black"] },
+{ name:"Maw of Malignance", slot:"Ability", classes:["Necromancer"], bag:"White", drops:["Parasite Chambers"], colors:["Red","White"] },
+
+{ name:"Bottled Medusozoan", slot:"Ability", classes:["Assassin"], bag:"White", drops:["Cnidarian Reef"], colors:["Yellow","White"] },
+{ name:"Cnidaria Rod", slot:"Ability", classes:["Sorcerer"], bag:"White", drops:["Cnidarian Reef"], colors:["White","Yellow"] },
+{ name:"Horrific Claws", img:"", slot:"Ring", classes:["All"], bag:"Orange", drops:["Mad Lab"], colors:["Gray","Black"] },
+{ name:"Scepter of Fulmination", img:"", slot:"Ability", classes:["Sorcerer"], bag:"White", drops:["Mad Lab"], colors:["Gray","Black"] },
+{ name:"Murky Toxin", img:"", slot:"Ability", classes:["Assassin"], bag:"White", drops:["Toxic Sewers"], colors:["Brown","Black"] },
+{ name:"Necronomicon", img:"", slot:"Ability", classes:["Priest"], bag:"White", drops:["Cursed Library"], colors:["Gray"] },
+{ name:"Ronin’s Wakizashi", img:"", slot:"Ability", classes:["Samurai"], bag:"White", drops:["Cursed Library"], colors:["Blue","White"] },
+{ name:"Corruption Cutter", img:"", slot:"Weapon", classes:["Rogue","Assassin","Trickster"], bag:"White", drops:["Cursed Library"], colors:["Red"] },
+{ name:"Rags of the Host", slot:"Armor", classes:["Rogue","Assassin","Trickster","Ninja","Druid"], bag:"Orange", drops:["Parasite Chambers"], colors:["Brown","Orange"] },
+{ name:"Quiver of Shrieking Specters", img:"", slot:"Ability", classes:["Archer"], bag:"Orange", drops:["Cursed Library"], colors:["Blue","Gray","White"] },
+{ name:"Experimental Ring", img:"", slot:"Ring", classes:["All"], bag:"White", drops:["Mad Lab"], colors:["Gray","Black"] },
+{ name:"Wraith’s Brigandine", img:"", slot:"Armor", classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"], bag:"Orange", drops:["Cursed Library"], colors:["Blue","Gray","White"] },
+{ name:"Revenant Ring", img:"", slot:"Ring", classes:["All"], bag:"Orange", drops:["Cursed Library"], colors:["Blue","Gray","White"] },
+
 
 { name:"Spectral Sword", img:"", slot:"Weapon", classes:["Warrior","Knight","Paladin"], bag:"White", drops:["Undead Lair"], colors:["White"] },
 { name:"Candy-Coated Armor", img:"", slot:"Armor", classes:["Warrior","Knight","Paladin","Samurai","Kensei"], bag:"White", drops:["Candyland Hunting Grounds"], colors:["White","Red"] },
+{ name:"Scholar’s Seal", img:"", slot:"Ability", classes:["Paladin"], bag:"White", drops:["Cursed Library"], colors:["Blue","White"] },
 { name:"Ring of Skeletal Specters", img:"", slot:"Ring", classes:["All"], bag:"White", drops:["Undead Lair"], colors:["Black","White"] },
 { name:"Candy Ring", img:"", slot:"Ring", classes:["All"], bag:"Cyan", drops:["Candyland Hunting Grounds"], colors:["Blue","Pink"] },
 { name:"Ring of Pure Wishes", img:"", slot:"Ring", classes:["All"], bag:"Orange", drops:["Candyland Hunting Grounds"], colors:["Pink","Gray"] },
@@ -246,11 +296,86 @@ const items = [
 { name:"Helm of the Juggernaut", img:"", slot:"Ability", classes:["Warrior"], bag:"White", drops:["World"], colors:["White","Blue"] },{ name:"Robe of the Mad Scientist", img:"", slot:"Armor", classes:["Wizard","Priest","Mystic","Necromancer","Sorcerer","Summoner","Bard"], bag:"White", drops:["Mad Lab"], colors:["Gray","Black"] },
 { name:"Shield of Flowing Clarity", img:"", slot:"Ability", classes:["Knight"], bag:"White", drops:["Magic Woods"], colors:["Blue","White"] },
 { name:"Woodland Robe", img:"", slot:"Armor", classes:["Wizard","Priest","Mystic","Necromancer","Sorcerer","Summoner","Bard"], bag:"White", drops:["Magic Woods"], colors:["Green","Brown"] },
+
+{ name:"Hivemind Mace", img:"", slot:"Ability", classes:["Summoner"], bag:"White", drops:["Plagued Nest","The nest"], colors:["Yellow","Orange"] },
+
+{ name:"Beekeeper’s Flamethrower", img:"", slot:"Weapon", classes:["Wizard","Mystic","Necromancer"], bag:"White", drops:["Plagued Nest"], colors:["Yellow","Orange"] },
+
+{ name:"Queen’s Stinger", img:"", slot:"Weapon", classes:["Rogue","Assassin","Trickster"], bag:"White", drops:["Plagued Nest","The nest"], colors:["Red","Black"] },
+{ name:"Ring of Divine Faith", img:"", slot:"Ring", classes:["All"], bag:"White", drops:["Manor of the Immortals"], colors:["Yellow","White"]},
+{ name:"Soulcursed Scythe", img:"", slot:"Weapon", classes:["Rogue","Assassin","Trickster"], bag:"Orange", drops:["Manor of the Immortals"], colors:["White","Black","Red"] },
+{ name:"Ghastly Drape", img:"", slot:"Ability", classes:["Rogue"], bag:"Orange", drops:["Haunted Cemetery"], colors:["Brown","Orange"] },
+{ name:"Etherite Dagger", img:"", slot:"Weapon", classes:["Rogue","Assassin","Trickster"], bag:"Orange", drops:["Haunted Cemetery"], colors:["Orange","Grey"] },
+{ name:"Combcutter Kunai", img:"", slot:"Ability", classes:["Ninja"], bag:"White", drops:["Plagued Nest","The nest"], colors:["Orange","Black"] },
+{ name:"Spectral Ring of Horrors", img:"", slot:"Ring", classes:["All"], bag:"Orange", drops:["Haunted Cemetery"], colors:["Yellow"] },
+{ name:"Hivemaster Helm", img:"", slot:"Ability", classes:["Warrior"], bag:"White", drops:["Plagued Nest","The nest"], colors:["Black","Yellow"] },
+{ name:"Yellow Beehemoth Armor", img:"", slot:"Armor", classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"], bag:"White", drops:["Plagued Nest","The nest"], colors:["Orange","Yellow","White"] },
+{ name:"Nectar Crossfire", img:"", slot:"Weapon", classes:["Archer","Huntress","Bard"], bag:"Orange", drops:["Plagued Nest","The nest"], colors:["Black","Yellow"] },
+{ name:"Honeytomb Snare", img:"", slot:"Ability", classes:["Huntress"], bag:"Orange", drops:["Plagued Nest","The nest"], colors:["Black","Yellow"] },
+{ name:"Apiary Armor", img:"", slot:"Armor", classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"], bag:"Orange", drops:["Plagued Nest","The nest"], colors:["Black","Yellow","White"] },
+{ name:"Spectral Cloth Armor", slot:"Armor", classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"], bag:"White", drops:["Davy Jones' Locker"], colors:["Blue","Black"] },
+{ name:"Captain’s Ring", slot:"Ring", classes:["All"], bag:"White", drops:["Davy Jones' Locker"], colors:["Purple","White"] },
+{ name:"Ghostly Prism", slot:"Ability", classes:["Trickster"], bag:"White", drops:["Davy Jones' Locker"], colors:["Blue","Purple","Black"] },
+{ name:"Honey Circlet", img:"", slot:"Ring", classes:["All"], bag:"Orange", drops:["Plagued Nest"], colors:["Orange","Black"] },
+{ name:"Mantle of Skuld", img:"", slot:"Armor", classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"], bag:"Orange", drops:["Haunted Cemetery"], colors:["Brown","Orange"] },
+{ name:"Wakizashi of Eastern Winds", slot:"Ability", classes:["Samurai"], bag:"White", drops:["Woodland Labyrinth"], colors:["Blue","White"] },
+{ name:"Coral Ring", slot:"Ring", classes:["All"], bag:"White", drops:["Ocean Trench"], colors:["Orange","Pink"] },
+{ name:"Coral Bow", slot:"Weapon", classes:["Archer","Huntress","Bard"], bag:"White", drops:["Ocean Trench"], colors:["Pink"] },
+{ name:"Coral Venom Trap", slot:"Ability", classes:["Huntress"], bag:"White", drops:["Ocean Trench"], colors:["Pink"] },
+
+{ name:"Labyrinth Dweller’s Sheath", slot:"Ability", classes:["Kensei"], bag:"White", drops:["Woodland Labyrinth"], colors:["Yellow","Blue","Red"] },
+{ name:"Elder Heartwood Staff", slot:"Weapon", classes:["Wizard","Mystic","Necromancer"], bag:"White", drops:["Woodland Labyrinth"], colors:["Brown","Orange"] },
+{ name:"Oceanic Apparel", slot:"Armor", classes:["Wizard","Priest","Necromancer","Mystic","Sorcerer","Summoner","Bard"], bag:"Orange", drops:["Ocean Trench"], colors:["Gold","Green"] },
+
+{ name:"Leaf Bow", slot:"Weapon", classes:["Archer","Huntress","Bard"], bag:"White", drops:["Woodland Labyrinth"], colors:["Green"] },
+{ name:"Mace of the Depths", slot:"Ability", classes:["Summoner"], bag:"White", drops:["The Crawling Depths"], colors:["Green","Purple"] },
+{ name:"Spider Silk Bow", slot:"Weapon", classes:["Archer","Huntress","Bard"], bag:"White", drops:["The Crawling Depths"], colors:["White","Green"] },
+
+{ name:"Imperial Keepsake", slot:"Ring", classes:["All"], bag:"Orange", drops:["Ocean Trench"], colors:["Green","White"] },
+
+{ name:"Slurpian Sea Scroll", slot:"Ability", classes:["Wizard"], bag:"Orange", drops:["Ocean Trench"], colors:["Green","Gold"] },
+
+{ name:"Tideturner Trident", slot:"Weapon", classes:["Wizard","Mystic","Necromancer"], bag:"Orange", drops:["Ocean Trench"], colors:["Gold"] },
+
+{ name:"Coral Silk Armor", slot:"Armor", classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"], bag:"White", drops:["Ocean Trench"], colors:["Pink"] },
+{ name:"Quartermaster Scabbard", slot:"Ability", classes:["Kensei"], bag:"White", drops:["Davy Jones' Locker"], colors:["Red","Green"] },
+{ name:"Resurrected Warrior’s Armor", img:"", slot:"Armor", classes:["Warrior","Knight","Paladin","Samurai","Kensei"], bag:"White", drops:["Haunted Cemetery"], colors:["Brown","Blue"] },
+{ name:"Spirit Dagger", slot:"Weapon", classes:["Rogue","Assassin","Trickster"], bag:"White", drops:["Davy Jones' Locker"], colors:["Blue","Purple"] },
+{ name:"Soul’s Guidance", img:"", slot:"Weapon", classes:["Priest","Sorcerer","Summoner","Druid"], bag:"White", drops:["Haunted Cemetery"], colors:["Green","Brown"] },
+{ name:"Hallowed Hide", img:"", slot:"Armor", classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"], bag:"Orange", drops:["Manor of the Immortals"], colors:["Red","Black"] },
+{ name:"Vampiric Cape", img:"", slot:"Ability", classes:["Rogue"], bag:"Orange", drops:["Manor of the Immortals"], colors:["Red","Black"] },
+{ name:"St. Abraham’s Wand", img:"", slot:"Weapon", classes:["Priest","Sorcerer","Summoner","Druid"], bag:"White", drops:["Manor of the Immortals"], colors:["White","Yellow"] },
+
+{ name:"Plague Poison", img:"", slot:"Ability", classes:["Assassin"], bag:"White", drops:["Haunted Cemetery"], colors:["Brown","Green	"] },
+{ name:"Amulet of Dispersion", img:"", slot:"Ring", classes:["All"], bag:"Cyan", drops:["Haunted Cemetery"], colors:["Purple","Yellow"] },
+{ name:"Chasuble of Holy Light", img:"", slot:"Armor", classes:["Wizard","Priest","Necromancer","Mystic","Sorcerer","Summoner","Bard"], bag:"White", drops:["Manor of the Immortals"], colors:["White","Yellow"] },
+{ name:"Tome of Purification", img:"", slot:"Ability", classes:["Priest"], bag:"White", drops:["Manor of the Immortals"], colors:["White","Yellow"] },
+{ name:"Ruthven’s Rosary", img:"", slot:"Ring", classes:["All"], bag:"Orange", drops:["Manor of the Immortals"], colors:["Red","White"] },
+{ name:"Bone Dagger", img:"", slot:"Weapon", classes:["Rogue","Assassin","Trickster"], bag:"White", drops:["Manor of the Immortals"], colors:["White"] },
+{ name:"Berserker’s Breastplate", img:"", slot:"Armor", classes:["Warrior","Knight","Paladin","Samurai","Kensei"], bag:"White", drops:["Abyss of Demons"], colors:["Red","Black"] },
+{ name:"Kyuuketsuki Hitogoroshi", img:"", slot:"Weapon", classes:["Samurai","Ninja","Kensei"], bag:"White", drops:["Manor of the Immortals"], colors:["Gold","White"] },
+
+{ name:"Prism of Dire Instabiliy", slot:"Ability", classes:["Trickster"], bag:"White", drops:["Puppet Master's Encore"], colors:["Purple","Black"] },
+{ name:"Buccaneer’s Battlegear", slot:"Armor", classes:["Knight","Warrior","Paladin","Samurai","Kensei"], bag:"Orange", drops:["Deadwater Docks"], colors:["Brown","Orange"] },
+{ name:"Thousand Shot", slot:"Weapon", classes:["Archer","Huntress","Bard"], bag:"White", drops:["Puppet Master's Encore"], colors:["White","Black"] },
+
+{ name:"Tricorne of the High Seas", slot:"Ability", classes:["Warrior"], bag:"Orange", drops:["Deadwater Docks"], colors:["Brown","Orange"] },
+{ name:"First Mate’s Hook", slot:"Ring", classes:["All"], bag:"Orange", drops:["Deadwater Docks"], colors:["Brown","Silver"] },
+{ name:"Wavecrest Concertina", slot:"Ability", classes:["Bard"], bag:"White", drops:["Deadwater Docks"], colors:["Black","White"] },
+{ name:"Swashbuckler’s Sickle", slot:"Weapon", classes:["Knight","Warrior","Paladin"], bag:"Orange", drops:["Deadwater Docks"], colors:["Silver","Orange"] },
+{ name:"Harlequin Armor", img:"", slot:"Armor", classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"], bag:"White", drops:["Puppet Master's Theatre"], colors:["Black","White","Red"] },
+{ name:"Demon Blade", img:"", slot:"Weapon", classes:["Warrior","Knight","Paladin"], bag:"White", drops:["Abyss of Demons"], colors:["White","Red"] },
+{ name:"Molten Mantle", img:"", slot:"Armor", classes:["Wizard","Priest","Necromancer","Mystic","Sorcerer","Summoner","Bard"], bag:"Orange", drops:["Abyss of Demons"], colors:["Yellow","Orange"] },
+{ name:"Scorchium Stone", img:"", slot:"Ability", classes:["Mystic"], bag:"Orange", drops:["Abyss of Demons"], colors:["Yellow","Orange"] },
+{ name:"Staff of Eruption", img:"", slot:"Weapon", classes:["Wizard","Mystic","Necromancer"], bag:"Orange", drops:["Abyss of Demons"], colors:["Yellow","Orange"] },
+{ name:"Volcanic Sheath", img:"", slot:"Ability", classes:["Kensei"], bag:"White", drops:["Abyss of Demons"], colors:["Red","White"] },
+{ name:"Ring of the Inferno", img:"", slot:"Ring", classes:["All"], bag:"Orange", drops:["Abyss of Demons"], colors:["Yellow","Orange"] },
 { name:"Fairy Ring", img:"", slot:"Ring", classes:["All"], bag:"White", drops:["Magic Woods"], colors:["Brown","Green"] },
 { name:"Ring of the Pyramid", img:"", slot:"Ring", classes:["All"], bag:"White", drops:["Tomb of the Ancients"], colors:["Gold"] },
 { name:"Pirate King's Cutlass", img:"", slot:"Weapon", classes:["Knight","Warrior","Paladin"], bag:"White", drops:["Deadwater Docks"], colors:["Silver","Gold"] },
+{ name:"Marionette Ravager", img:"", slot:"Weapon", classes:["Rogue","Assassin","Trickster"], bag:"White", drops:["Puppet Master's Theatre"], colors:["Green","Yellow"] },
 {name:"Breastplate of New Life", img:"", slot:"Armor", classes:["Knight","Warrior","Paladin","Samurai","Kensei"], bag:"White", drops:["Lost Halls"], colors:["White","Gold"]},
-{name:"Doku No Ken", img:"", slot:"Weapon", classes:["Ninja","Samurai","Kensei"], bag:"White", drops:["The Crawling Depths"], colors:["Purple","Green"]},
+{name:"Doku No Ken", img:"", slot:"Weapon", classes:["Ninja","Samurai","Kensei"], bag:"White", drops:["The Crawling Depths"], colors:["Green","White"]},
   {name:"Wyrmhide Armor",img:"",slot:"Armor",classes:["Rogue","Archer","Assassin","Huntress","Trickster","Ninja","Druid"],bag:"Red",drops:["Multiple"],colors:["Green"]},
   {name:"Annihilation Armor",img:"",slot:"Armor",classes:["Knight","Warrior","Paladin","Samurai","Kensei"],bag:"Red",drops:["Multiple"],colors:["Blue","Yellow"]}
 ];
@@ -308,18 +433,28 @@ function submitGuess(){
   const r=document.createElement("div");
   r.className="row";
 
-  const imgC=document.createElement("div");
-  imgC.className="cell-img";
-  r.appendChild(imgC);
+const imgC = document.createElement("div");
+imgC.className = "cell-img";
 
-  const dropText=g.drops[0]==="Multiple"||g.drops.length>1?"Multiple":g.drops[0];
+if (g.img) {
+  imgC.innerHTML = `
+    <img src="${g.img}" class="portal-img" alt="${g.name}">
+  `;
+}
+
+r.appendChild(imgC);
+
+  const dropText =
+  g.bag === "Red" && g.drops[0] === "Multiple"
+    ? "Multiple"
+    : g.drops.join(", ");
 
   const cells=[
     [g.slot,target.slot,cmpSimple,g.slot],
     ["class",null,null,g.classes.join(", ")],
     [g.bag,target.bag,cmpSimple,g.bag],
     [g.drops,target.drops,cmpDrops,dropText],
-    [g.colors,target.colors,cmpColors,g.colors.join(", ")]
+    [g.colors, target.colors, cmpColors, g.colors.join(", ")]
   ];
 
   cells.forEach((d,i)=>{
