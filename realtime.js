@@ -1,35 +1,32 @@
-console.log("✅ realtime.js chargé");
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-// ✅ CONFIG SUPABASE (OK EN FRONTEND)
-const SUPABASE_URL = "https://ifrbxthbffpjrgjywtve.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_F9eLxTwVgSNBUNQLn-Wrcw_PXF5QLYW";
-
-export const supabase = createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
+const supabase = createClient(
+  "https://ifrbxthbffpjrgjywtve.supabase.co",
+  "sb_publishable_F9eLxTwVgSNBUNQLn-Wrcw_PXF5QLYW"
 );
 
-// ✅ TEST TEMPS RÉEL SIMPLE
-export function initRealtimeTest() {
-  const channel = supabase.channel("test-channel");
+let channel;
 
-  channel.on("broadcast", { event: "ping" }, payload => {
-    console.log("📡 Reçu :", payload);
-  });
+// 🎮 JOIN ROOM
+export function joinRoom(room){
+  channel = supabase.channel("music-" + room);
 
-  channel.subscribe(status => {
-    if (status === "SUBSCRIBED") {
-      console.log("✅ Realtime connecté");
+  channel.on("broadcast", { event: "action" }, (payload) => {
+    if (window.handleRemoteAction) {
+      window.handleRemoteAction(payload.payload);
     }
   });
 
-  // ping test
-  setTimeout(() => {
+  channel.subscribe();
+}
+
+// 📡 SEND ACTION
+export function sendAction(data){
+  if(channel){
     channel.send({
       type: "broadcast",
-      event: "ping",
-      payload: { msg: "hello realtime" }
+      event: "action",
+      payload: data
     });
-  }, 2000);
+  }
 }
